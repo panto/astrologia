@@ -1,3 +1,5 @@
+# Skrypt wyliczający okresy retrogradacji Marsa w latach 1945-2014
+
 # Tip na wyliczanie retrogradacji za pomocą swetest.
 #
 # Alois Treindl:
@@ -11,9 +13,9 @@
 
 require 'date'
 
-start_date = Date.parse("1.1.1946")
-end_date   = Date.parse("31.12.2013")
-days_range = end_date - start_date + 365 * 2
+start_date = Date.parse("1.1.1945")
+end_date   = Date.parse("31.12.2014")
+days_range = end_date - start_date
 
 output = `swe/swetest -p4 -fTS -b1.1.1945 -n#{days_range.to_i} -head`
 
@@ -37,7 +39,7 @@ rows.each do |row|
   end
 end
 
-# Otuput:
+# Retrogradacja Marsa w latach 1945-2014:
 # 
 # 1945-12-05 - 1946-02-21
 # 1948-01-09 - 1948-03-29
