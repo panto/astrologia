@@ -1,0 +1,81 @@
+---
+title: "Baza konfliktów - obróbka danych w R"
+author: "Tomasz Stąpor"
+date: "30 września 2014"
+output:
+  html_document:
+    theme: readable
+    toc: yes
+---
+
+##Wstęp
+
+Opis procedury odpytania bazy konfliktów militarnych [UCDP/PRIO Armed Conflict Dataset v.4-2014, 1946 – 2013](http://www.pcr.uu.se/research/ucdp/datasets/ucdp_prio_armed_conflict_dataset/) o dokładne daty początku 159 konfliktów. Baza zawiera 254 konfliky oraz ich rozwój w kolejnych latach. Każdy rok konfliktu to kolejny rekord w bazie. Wszystkich rekordów jest 2134. Dokładny opis bazy danych wraz z wyjaśnieniem poszczególnych zmiennych znajduje się w [Codebook](http://www.pcr.uu.se/digitalAssets/124/124920_1codebook_ucdp_prio-armed-conflict-dataset-v4_2014.pdf).
+
+## Baza danych
+
+Cała baza składa się z 27 kolumn, które są opisane w Codebook. Na potrzeby zadania w dalszej pracy korzystam jedynie z kilku kolumn tej bazy:
+
+```{r}
+  # Pobranie pliku bazy
+  load("data/124920_1ucdpprioarmedconflictdataset4.2014.rdata")
+  # Wybieram jedynie parę kolumn
+  data <- subset(ucdpConflict, select=c(ConflictId,Location,Year,StartDate,StartPrec))
+  # Drukuję pierwszych 6 rekordów
+  head(data)
+```
+
+Poniżej opis kolumn z bazy, którymi się interesowałem:
+
+* `ConflictId` - Każdy konflit ma swój unikalny numer Id.
+* `Year` - Konflikt może ciągnąć się latami, dlatego gdy w danym roku zaobserwuje się conajmniej 25 ofiar śmiertelnych w konflikcie to pojawia się nowy rekord. Kolumna _Year_ pokazuje, jak konflikt rozwija się w kolejnych latach.
+* `StartDate` - Data pojawienia się pierwszej ofiary śmiertelnej. 
+* `StartPrec` - Dokładność daty w _StartDate_. 1 - Data dokładna co do dnia. 2 - dokładna co do miesiąca, etc..
+
+### Ilość konfliktów a rekordy
+
+Mamy 2134 rekordy w bazie danych oraz 254 konflikty. Różnica wynika z tego, że jeden konflikt może ciągnąć się latami, co jest pokazane w bazie za pomocą kolejnych rekordów.
+  
+```{r}
+  # Ilość rekordów
+  nrow(data)
+  # Ilość konfliktów. Zliczenie wszystkich unikalnych ConflictId
+  length(table(data$ConflictId))
+```
+
+## Wybór dokładnych dat
+
+Wybieram jedynie te rekordy, których `StartPrec == 1`, a więc data pojawienia się pierwszej ofiary śmiertelnej konfliktu zmienna `StartDate` jest dokładnie znana:
+
+```{r}
+  # Pobranie wierszy ze StartPrec == 1 oraz wskazanych kolumn z bazy
+  data  <- subset(ucdpConflict, StartPrec == 1, select=c(ConflictId,Location,Year,StartDate,StartPrec))
+  # Wydruk kontrolny, pierwsze 4 wiersze
+  head(data,4)
+  # Zliczenie wierszy i kolumn
+  dim(data)
+```
+
+## 159 dokładnych dat
+
+Wierszy z poprzedniego zliczenia jest 1163, gdyż baza przedstawia również kolejne lata konfliktu. Dlatego dokonuję zliczenia wszystkich rekordów na podstawie kolumny `StartDate`. Wszystkich dat jest:
+
+```{r}
+  length(table(data$StartDate))
+```
+
+### Histogram
+
+Graficzne przedstawienie 159 dat na osi czsu. Na osi _y_ ilość lat konfliktu, którego początek jest przedstawiony na osi _x_.
+
+```{r}
+  plot(table(data$StartDate))
+```
+
+### Lista wszystkich dat
+
+Lista wszystkich dat na podstawie ktorej został wygenerowany powyższy histogram.
+
+```{r}
+  data.frame(table(data$StartDate))
+```
