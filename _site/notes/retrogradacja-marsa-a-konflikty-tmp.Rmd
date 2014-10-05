@@ -1,0 +1,66 @@
+Tekst na temat „są układy planet, jak na przykład retrogradujący Mars, które sprzyjają konfliktowi i sytuacjom militarnym” (45:00). Postanowiłm przyjrzeć się bliżej temu twierdzeniu badając bazę 2134 konfliktów militarnych mających miejsce w latach 1946-2013. Powstaniu artykułu przyświecają dwa cele: 1) przekazanie wiedzy statystycznej z tematyki wnioskowania statystycznego; 2) pokazanie pracy związanej z obrabianiem dużych danych w programie R. Wszystkie dane potrzebne do wygenerowania wykresów znajdują się na GitHubie, a więc można podejrzeć sposób pracy w programie R. Całość na tej stronie starałem się przekazać w sposób możliwie najprostrzy.
+
+# Wnioskowanie statystyczne
+
+Istnieje dział statystyki przedstawiający reguły wnioskowania, zastosowanie których pozwala zminimalizować ryzyko popełnienia błędu. Często jest tak, że chcemy ustalić jakieś ogólne prawo odnoszące się do całej populacji na podstawie obsewacji dokonanych na jej mniejszej części. Tak jest w przypadku chęci sprawdzenia tezy o Marsie w retro i jego wpływie na konflikty militarne. Nigdy nie zbadamy 
+
+na losowo dobranej próbie. Tak jest w tym przypadku - na podstawie części konfliktów chcemy wy
+
+Twierdzenie astrologiczne o wpływie retrogradującego Marsa na ilość konfliktów n. procedurę testowania hipotez. Przy tego typu sytuacjach nasze działanie sprowadza się do stworzenia dwóch hipotez, które są przedstawieniem ilościowym problemu, który badamy.
+
+### Hipoteza zerowa i alternatywna
+
+Zakładam, że twierdzenie o Marsie w retro i konfliktach jest nieprawdziwe. W tym miejscu często się pojawia pytanie, dlaczego wychodzi się od takiego założenie. Po prostu przy testowaniu hipotezy w sposób statystyczny zaklada się na początku nieistnienie danego zjawiska, czyli niedziałanie leku, czy Marsa w retro przy konfliktach. Samo założenie nie wystarczy i muszę je przełożyć na jakąś wartość mierzalną, do której będę się odnosił, tzw. wartość oczekiwana. Akurat w tym przypadku mogę to zrobić na dwa sposoby: 
+
+1) Mars w retro przebywa 72 dni na 780 dni = 72/780 = 0,0923 = 9,23% czasu;
+2) Na podstawie efemeryd
+
+Stwierdzając, że twierdzenie o wpływie Marsa w retro na konflikty jest nieprawdziwe mam na myśli, że badając bazę danych konfliktów zaobserwuję około 9% procent horoskopów z Marsem w retrogradacji. W ten sposób definiuję hipotezę zerową, H0 = 9,23% 
+
+Twierdzenie o tym, że Mars w retrogradacji wpływa na konflikty zakłada, że powinno być to w jakiś sposób widoczne w bazie horoskopów konfliktów. Zakładamy tutaj, że HA > 9,23%. Co oznacza, że w bazie horoskopów konfliktów spodziewamy się znaleźć więcej niż 9,23% horoskopów konfliktów, w których Mars byl w retrogradacji.
+
+Mamy więc dwie hipotezy, które głoszą:
+
+H0 = 9,23%
+HA > 9,23%
+
+W tym miejscu pojawia się złożony problem matematyczno statystyczny, który wynika z tego, że chcę wnioskować o całej populacji konfliktów na podstawie próby, co rodzi konieczność zastosowania rachunku prawdopodobieństwa. Ujmując tę kwestię najprościej. Jeżeli w populacji oczekuję uzyskać 9,23% proporcji jakiejść cechy, to badająć jej próbkę w większości przypadków uzyskam inny wynik. Celem testu statystycznego jest więc określenie, że na ile odstępstwo od 9,23% jest na tyle duże, że jego wystąpienie mało prawdopodobne, a więc coś może się za tym kryje.
+
+# Baza danych
+
+Chcąc zbadać tego typu stwierdzenie w pierwszej kolejności należy zadbać o jakąś niezależną od nas bazę danych. Chodzi tutaj o to, by nie być posądzonym o dobranie wyników tak, że posują do danej hipotezy. Można tutaj zwrócić uwagę na fakt występowania w
+
+12 na 159 = 0,0755, czyli 7,5 %72
+
+
+
+
+znalazłem bardzo ciekawe dane statystyczne na temat konfliktów zbrojnych, jakie pojawiły się w latach 1946-2013, a które udostępniane są przez skandynawskie organizacje zajmujące się badaniem wojen i konfliktów. W najnowszej bazie danych udostępnionej na tej stronie: http://goo.gl/7XahX znajduje się 2134 rekordów, a każdy z nich zawiera konflikt, w którym zginęło co najmniej 25 osób. W załączeniu wykres przedstawiający ilość konfliktów militarnych w każdym roku.
+
+```{r echo=FALSE}
+# http://www.pcr.uu.se/research/ucdp/datasets/ucdp_prio_armed_conflict_dataset/
+load("data/124920_1ucdpprioarmedconflictdataset4.2014.rdata")
+library(ggplot2)
+fq  <- data.frame(table(ucdpConflict$Year))
+ggplot(fq, aes(x=Var1, y=Freq)) +
+  geom_line(aes(group=1)) +     # Group all points; otherwise no line will show
+  geom_point(size=3) +
+  theme(axis.text.x=element_text(angle=90,hjust=1,vjust=0.5))
+```
+
+```{r message=FALSE, echo=FALSE}
+library(IPSUR) 
+library(HH)
+```
+
+```{r}
+prop.test(x=12, n=159, p = 72/780, alternative = "greater", conf.level=0.92, correct=FALSE)
+```
+
+```{r message=FALSE, echo=FALSE}
+p <-prop.test(x=12, n=159, p = 72/780, alternative = "greater", conf.level=0.92, correct=FALSE)
+plot(p)
+```
+
+
+
